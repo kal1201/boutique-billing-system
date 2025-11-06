@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     }).returning();
 
-    return NextResponse.json(newCustomer[0], { status: 201 });
+    return NextResponse.json({ customer: newCustomer[0] }, { status: 201 });
   } catch (error: any) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json(

@@ -207,6 +207,16 @@ export default function BillingPage() {
   const handleCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!newCustomer.name.trim()) {
+      toast.error('Please enter customer name');
+      return;
+    }
+
+    if (!newCustomer.phone.trim()) {
+      toast.error('Please enter phone number');
+      return;
+    }
+
     const existingCustomer = customers.find(c => c.phone === newCustomer.phone);
     if (existingCustomer) {
       toast.error('Phone number already exists!');
@@ -740,7 +750,15 @@ export default function BillingPage() {
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => setIsAddCustomerOpen(true)}
+                      onClick={() => {
+                        setNewCustomer({ 
+                          name: '', 
+                          phone: customerPhone, 
+                          email: '', 
+                          address: '' 
+                        });
+                        setIsAddCustomerOpen(true);
+                      }}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add New Customer
@@ -891,6 +909,7 @@ export default function BillingPage() {
                     id="newCustomerName"
                     value={newCustomer.name}
                     onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                    placeholder="Enter customer name"
                     required
                   />
                 </div>
@@ -898,8 +917,9 @@ export default function BillingPage() {
                   <Label htmlFor="newCustomerPhone">Phone *</Label>
                   <Input
                     id="newCustomerPhone"
-                    value={newCustomer.phone || customerPhone}
+                    value={newCustomer.phone}
                     onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                    placeholder="Enter phone number"
                     required
                   />
                 </div>
@@ -910,6 +930,7 @@ export default function BillingPage() {
                     type="email"
                     value={newCustomer.email}
                     onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                    placeholder="Enter email (optional)"
                   />
                 </div>
                 <div className="space-y-2">
@@ -918,6 +939,7 @@ export default function BillingPage() {
                     id="newCustomerAddress"
                     value={newCustomer.address}
                     onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                    placeholder="Enter address (optional)"
                   />
                 </div>
               </div>
