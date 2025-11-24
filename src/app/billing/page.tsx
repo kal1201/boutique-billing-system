@@ -25,7 +25,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { api } from '@/lib/api';
-import { ShoppingCart, Search, Plus, Minus, Trash2, Receipt, User, AlertCircle, CreditCard, Phone, Gift } from 'lucide-react';
+import { ShoppingCart, Search, Plus, Minus, Trash2, Receipt, User, AlertCircle, CreditCard, Phone, Gift, Download, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface IProduct {
@@ -296,238 +296,319 @@ export default function BillingPage() {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow && invoiceRef.current) {
-      printWindow.document.write(`
+    if (!invoiceRef.current) {
+      toast.error('Invoice not ready for printing');
+      return;
+    }
+
+    try {
+      const invoiceContent = invoiceRef.current.innerHTML;
+      
+      const printStyles = `
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: white;
+            color: black;
+          }
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+          }
+          .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+          }
+          .invoice-header .blessing {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-decoration: underline;
+          }
+          .invoice-header img {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 10px;
+            display: block;
+          }
+          .invoice-header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          .invoice-header .address {
+            font-size: 13px;
+            margin: 3px 0;
+          }
+          .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #000;
+          }
+          .info-item {
+            font-size: 14px;
+          }
+          .info-label {
+            font-weight: bold;
+          }
+          .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+          }
+          .invoice-table thead {
+            background: #000;
+            color: white;
+          }
+          .invoice-table th {
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+            border: 1px solid #000;
+          }
+          .invoice-table th.center {
+            text-align: center;
+          }
+          .invoice-table th.right {
+            text-align: right;
+          }
+          .invoice-table td {
+            padding: 8px;
+            font-size: 13px;
+            border: 1px solid #000;
+          }
+          .invoice-table td.center {
+            text-align: center;
+          }
+          .invoice-table td.right {
+            text-align: right;
+          }
+          .invoice-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+          }
+          .footer-info {
+            font-size: 11px;
+            margin-bottom: 15px;
+          }
+          .footer-terms {
+            font-size: 10px;
+            line-height: 1.4;
+          }
+          .thank-you {
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+          }
+          .total-row {
+            font-weight: bold;
+            background: #f0f0f0;
+          }
+          @media print {
+            body {
+              padding: 0;
+            }
+            @page {
+              size: A4;
+              margin: 15mm;
+            }
+          }
+        </style>
+      `;
+
+      const htmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
             <title>Invoice ${currentBill?.invoiceNumber || ''}</title>
-            <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              body {
-                font-family: 'Arial', sans-serif;
-                padding: 20mm;
-                background: white;
-                color: #1a1a1a;
-              }
-              .invoice {
-                max-width: 210mm;
-                margin: 0 auto;
-                background: white;
-              }
-              .header {
-                text-align: center;
-                margin-bottom: 40px;
-                padding-bottom: 20px;
-                border-bottom: 3px solid #9333ea;
-              }
-              .header img {
-                width: 80px;
-                height: 80px;
-                margin: 0 auto 10px;
-                display: block;
-              }
-              .header h1 {
-                color: #9333ea;
-                font-size: 42px;
-                font-weight: bold;
-                margin-bottom: 8px;
-                letter-spacing: 1px;
-              }
-              .header .tagline {
-                color: #666;
-                font-size: 16px;
-                font-style: italic;
-                margin-bottom: 4px;
-              }
-              .header .address {
-                color: #888;
-                font-size: 14px;
-              }
-              .invoice-info {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 40px;
-                padding: 20px;
-                background: #f9fafb;
-                border-radius: 8px;
-              }
-              .info-section {
-                flex: 1;
-              }
-              .info-section h3 {
-                color: #9333ea;
-                font-size: 14px;
-                font-weight: bold;
-                text-transform: uppercase;
-                margin-bottom: 12px;
-                letter-spacing: 0.5px;
-              }
-              .info-section p {
-                font-size: 15px;
-                margin-bottom: 6px;
-                color: #333;
-              }
-              .info-section .label {
-                font-weight: 600;
-                color: #555;
-                display: inline-block;
-                min-width: 100px;
-              }
-              .invoice-number {
-                font-size: 18px !important;
-                font-weight: bold !important;
-                color: #9333ea !important;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 40px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              }
-              thead {
-                background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
-                color: white;
-              }
-              th {
-                padding: 16px 12px;
-                text-align: left;
-                font-weight: 600;
-                font-size: 14px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              }
-              th.text-center { text-align: center; }
-              th.text-right { text-align: right; }
-              tbody tr {
-                border-bottom: 1px solid #e5e7eb;
-                transition: background 0.2s;
-              }
-              tbody tr:hover {
-                background: #f9fafb;
-              }
-              tbody tr:last-child {
-                border-bottom: 2px solid #9333ea;
-              }
-              td {
-                padding: 14px 12px;
-                font-size: 15px;
-                color: #333;
-              }
-              td.text-center { text-align: center; }
-              td.text-right { text-align: right; }
-              td.product-name {
-                font-weight: 600;
-                color: #1a1a1a;
-              }
-              .totals-section {
-                display: flex;
-                justify-content: flex-end;
-                margin-bottom: 40px;
-              }
-              .totals {
-                width: 350px;
-                padding: 24px;
-                background: #f9fafb;
-                border-radius: 8px;
-                border: 2px solid #e5e7eb;
-              }
-              .totals-row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 12px;
-                font-size: 15px;
-              }
-              .totals-row .label {
-                color: #555;
-                font-weight: 500;
-              }
-              .totals-row .value {
-                font-weight: 600;
-                color: #1a1a1a;
-              }
-              .totals-row.discount {
-                color: #16a34a;
-              }
-              .totals-row.discount .value {
-                color: #16a34a;
-              }
-              .totals-row.points {
-                color: #9333ea;
-              }
-              .totals-row.points .value {
-                color: #9333ea;
-              }
-              .totals-row.total {
-                margin-top: 16px;
-                padding-top: 16px;
-                border-top: 2px solid #9333ea;
-                font-size: 20px;
-                font-weight: bold;
-              }
-              .totals-row.total .label {
-                color: #1a1a1a;
-              }
-              .totals-row.total .value {
-                color: #9333ea;
-              }
-              .footer {
-                text-align: center;
-                margin-top: 50px;
-                padding-top: 30px;
-                border-top: 2px solid #e5e7eb;
-              }
-              .footer .thank-you {
-                font-size: 20px;
-                font-weight: bold;
-                color: #9333ea;
-                margin-bottom: 8px;
-              }
-              .footer .visit-again {
-                font-size: 16px;
-                color: #666;
-                margin-bottom: 20px;
-              }
-              .footer .contact {
-                font-size: 13px;
-                color: #888;
-                margin-top: 20px;
-              }
-              @media print {
-                body { 
-                  padding: 0; 
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-                }
-                @page { 
-                  margin: 15mm;
-                  size: A4;
-                }
-                .invoice {
-                  box-shadow: none;
-                }
-                tbody tr:hover {
-                  background: transparent;
-                }
-              }
-            </style>
+            <meta charset="utf-8">
+            ${printStyles}
           </head>
           <body>
-            ${invoiceRef.current.innerHTML}
+            ${invoiceContent}
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
           </body>
         </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
+      `;
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document;
+      if (!iframeDoc) {
+        toast.error('Unable to create print document');
+        document.body.removeChild(iframe);
+        return;
+      }
+
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
+
+      toast.info('Preparing to print...');
+
       setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 250);
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          toast.success('Print dialog opened!');
+          
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 1000);
+        } catch (err) {
+          console.error('Print error:', err);
+          toast.error('Failed to open print dialog');
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }
+      }, 1000);
+
+    } catch (error: any) {
+      console.error('Print setup error:', error);
+      toast.error('Failed to prepare invoice for printing');
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!currentBill) {
+      toast.error('Invoice not ready for download');
+      return;
+    }
+
+    try {
+      toast.info('Generating PDF, please wait...');
+
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
+      
+      const jsPDFModule = await import('jspdf');
+      const jsPDF = jsPDFModule.jsPDF;
+
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;left:-99999px;top:0;width:800px;height:1200px;border:0;background:#ffffff;';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) {
+        throw new Error('Unable to create iframe document');
+      }
+
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            * { 
+              margin: 0; 
+              padding: 0; 
+              box-sizing: border-box;
+              background-color: transparent;
+              color: #000000;
+            }
+            body { 
+              font-family: Arial, sans-serif; 
+              background-color: #ffffff !important;
+              color: #000000 !important;
+              padding: 40px;
+              width: 800px;
+            }
+          </style>
+        </head>
+        <body style="background-color: #ffffff !important;">
+          ${invoiceRef.current?.innerHTML || ''}
+        </body>
+        </html>
+      `);
+      iframeDoc.close();
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const canvas = await html2canvas(iframeDoc.body, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: 800,
+        windowHeight: iframeDoc.body.scrollHeight,
+      });
+
+      document.body.removeChild(iframe);
+
+      if (canvas.width === 0 || canvas.height === 0) {
+        throw new Error('Canvas has invalid dimensions');
+      }
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      } else {
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+      }
+
+      const fileName = `invoice-${currentBill.invoiceNumber || 'unknown'}.pdf`;
+      pdf.save(fileName);
+
+      toast.success('PDF downloaded successfully!');
+    } catch (error: any) {
+      console.error('PDF generation error:', error);
+      toast.error('Failed to generate PDF: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -960,7 +1041,7 @@ export default function BillingPage() {
         </Dialog>
 
         <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Invoice Generated</DialogTitle>
               <DialogDescription>
@@ -968,96 +1049,154 @@ export default function BillingPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div ref={invoiceRef} className="invoice">
-              <div className="header">
+            <div 
+              ref={invoiceRef} 
+              className="invoice-container"
+              style={{
+                maxWidth: '800px',
+                margin: '0 auto',
+                fontFamily: 'Arial, sans-serif',
+                backgroundColor: 'white',
+                padding: '20px',
+                color: '#000'
+              }}
+            >
+              <div 
+                className="invoice-header"
+                style={{
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  borderBottom: '2px solid #000',
+                  paddingBottom: '15px'
+                }}
+              >
+                <div className="blessing" style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '10px', textDecoration: 'underline' }}>
+                  Shree Ganeshay Namah
+                </div>
                 <img 
                   src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/kalasiddhi-logo-1763964669194.png?width=8000&height=8000&resize=contain"
                   alt="Kala Siddhi Logo"
-                  style={{ width: '80px', height: '80px', margin: '0 auto 10px', display: 'block' }}
+                  style={{ width: '100px', height: '100px', margin: '0 auto 10px', display: 'block' }}
                 />
-                <h1>Kala Siddhi</h1>
-                <p className="tagline">Boutique Billing System</p>
-                <p className="address">Women's Fashion Store</p>
+                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '5px', color: '#000' }}>
+                  (Kala Siddhi)
+                </h1>
+                <p className="address" style={{ fontSize: '13px', margin: '3px 0', color: '#000' }}>
+                  Sh-6, Kasturi Plaza, Manpada Road,
+                </p>
+                <p className="address" style={{ fontSize: '13px', margin: '3px 0', color: '#000' }}>
+                  Dombivli (E), Pin-421201.
+                </p>
+                <p className="address" style={{ fontSize: '13px', margin: '3px 0', color: '#000' }}>
+                  M.: 7977696796 / 8097889063
+                </p>
               </div>
 
-              <div className="invoice-info">
-                <div className="info-section">
-                  <h3>Invoice Details</h3>
-                  <p><span className="label">Invoice #:</span> <span className="invoice-number">{currentBill?.invoiceNumber}</span></p>
-                  <p><span className="label">Date:</span> {currentBill?.createdAt ? new Date(currentBill.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
-                  <p><span className="label">Time:</span> {currentBill?.createdAt ? new Date(currentBill.createdAt).toLocaleTimeString('en-IN') : ''}</p>
-                  <p><span className="label">Payment:</span> <span style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>{currentBill?.paymentMode}</span></p>
+              <div 
+                className="invoice-info"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  margin: '20px 0',
+                  padding: '10px 0',
+                  borderBottom: '1px solid #000'
+                }}
+              >
+                <div className="info-item" style={{ fontSize: '14px', color: '#000' }}>
+                  <span className="info-label" style={{ fontWeight: 'bold' }}>A Memo No:</span> {currentBill?.invoiceNumber}
                 </div>
-                {currentBill?.customerName && currentBill.customerName !== 'Walk-in Customer' && (
-                  <div className="info-section">
-                    <h3>Customer Details</h3>
-                    <p><span className="label">Name:</span> {currentBill.customerName}</p>
-                    <p><span className="label">Phone:</span> {currentBill.customerPhone}</p>
-                    {currentBill.loyaltyPointsEarned > 0 && (
-                      <p style={{ color: '#9333ea', fontWeight: 'bold' }}>
-                        <span className="label">Points Earned:</span> +{currentBill.loyaltyPointsEarned}
-                      </p>
-                    )}
-                  </div>
-                )}
+                <div className="info-item" style={{ fontSize: '14px', color: '#000' }}>
+                  <span className="info-label" style={{ fontWeight: 'bold' }}>Date:</span> {currentBill?.createdAt ? new Date(currentBill.createdAt).toLocaleDateString('en-IN') : ''}
+                </div>
               </div>
 
-              <table>
-                <thead>
+              <table 
+                className="invoice-table"
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  marginBottom: '20px'
+                }}
+              >
+                <thead style={{ backgroundColor: '#000', color: 'white' }}>
                   <tr>
-                    <th style={{ width: '50%' }}>Item Description</th>
-                    <th className="text-center" style={{ width: '15%' }}>Quantity</th>
-                    <th className="text-right" style={{ width: '15%' }}>Price</th>
-                    <th className="text-right" style={{ width: '20%' }}>Total</th>
+                    <th style={{ padding: '8px', textAlign: 'left', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Sr No
+                    </th>
+                    <th style={{ padding: '8px', textAlign: 'left', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Code No
+                    </th>
+                    <th style={{ padding: '8px', textAlign: 'left', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Particulars
+                    </th>
+                    <th className="center" style={{ padding: '8px', textAlign: 'center', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Qty
+                    </th>
+                    <th className="right" style={{ padding: '8px', textAlign: 'right', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Rate
+                    </th>
+                    <th className="right" style={{ padding: '8px', textAlign: 'right', fontSize: '12px', border: '1px solid #000', color: '#fff' }}>
+                      Rupees
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {(currentBill?.items || []).map((item: any, index: number) => (
                     <tr key={index}>
-                      <td className="product-name">{item.productName}</td>
-                      <td className="text-center">{item.quantity}</td>
-                      <td className="text-right">₹{item.price?.toFixed(2)}</td>
-                      <td className="text-right">₹{item.total?.toFixed(2)}</td>
+                      <td style={{ padding: '8px', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        {index + 1}
+                      </td>
+                      <td style={{ padding: '8px', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        {item.productId || '-'}
+                      </td>
+                      <td style={{ padding: '8px', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        {item.productName}
+                      </td>
+                      <td className="center" style={{ padding: '8px', textAlign: 'center', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        {item.quantity}
+                      </td>
+                      <td className="right" style={{ padding: '8px', textAlign: 'right', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        ₹{item.price?.toFixed(2)}
+                      </td>
+                      <td className="right" style={{ padding: '8px', textAlign: 'right', fontSize: '13px', border: '1px solid #000', color: '#000' }}>
+                        ₹{item.total?.toFixed(2)}
+                      </td>
                     </tr>
                   ))}
+                  <tr className="total-row" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }}>
+                    <td colSpan={5} style={{ padding: '8px', fontSize: '14px', border: '1px solid #000', textAlign: 'right', color: '#000' }}>
+                      Total
+                    </td>
+                    <td className="right" style={{ padding: '8px', textAlign: 'right', fontSize: '14px', border: '1px solid #000', fontWeight: 'bold', color: '#000' }}>
+                      ₹{currentBill?.totalAmount?.toFixed(2)}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
 
-              <div className="totals-section">
-                <div className="totals">
-                  <div className="totals-row">
-                    <span className="label">Subtotal:</span>
-                    <span className="value">₹{currentBill?.subtotal?.toFixed(2)}</span>
-                  </div>
-                  {currentBill?.gstAmount > 0 && (
-                    <div className="totals-row">
-                      <span className="label">GST:</span>
-                      <span className="value">₹{currentBill?.gstAmount?.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {currentBill?.discount > 0 && (
-                    <div className="totals-row discount">
-                      <span className="label">Discount:</span>
-                      <span className="value">-₹{currentBill?.discount?.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {currentBill?.loyaltyPointsRedeemed > 0 && (
-                    <div className="totals-row points">
-                      <span className="label">Points Redeemed:</span>
-                      <span className="value">-₹{currentBill?.loyaltyPointsRedeemed?.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="totals-row total">
-                    <span className="label">Grand Total:</span>
-                    <span className="value">₹{currentBill?.totalAmount?.toFixed(2)}</span>
-                  </div>
+              <div 
+                className="invoice-footer"
+                style={{
+                  marginTop: '30px',
+                  paddingTop: '15px',
+                  borderTop: '2px solid #000'
+                }}
+              >
+                <div className="footer-info" style={{ fontSize: '11px', marginBottom: '15px', color: '#000' }}>
+                  <p><strong>GSTIN : 27BNCPC7023B1Z0</strong></p>
+                  <p>Composition Taxable Person not eligible to collect tax on suppliers</p>
                 </div>
-              </div>
-
-              <div className="footer">
-                <p className="thank-you">Thank You for Shopping with Us!</p>
-                <p className="visit-again">We look forward to serving you again</p>
-                <p className="contact">For inquiries: contact@kalasiddhi.com | +91 12345 67890</p>
+                <div className="footer-terms" style={{ fontSize: '10px', lineHeight: '1.4', color: '#000' }}>
+                  <p><strong>Terms and Conditions</strong></p>
+                  <p>Goods once sold will not be taken back.</p>
+                  <p>Used or washed clothes will not be exchanged.</p>
+                  <p>Clothes can be exchanged separately.</p>
+                  <p>Goods exchanged within 7 days between 12 & 4 pm.</p>
+                  <p>No guarantee for silk material.</p>
+                </div>
+                <div className="thank-you" style={{ textAlign: 'right', fontSize: '16px', fontWeight: 'bold', marginTop: '20px', color: '#000' }}>
+                  Thank You
+                </div>
               </div>
             </div>
 
@@ -1065,8 +1204,12 @@ export default function BillingPage() {
               <Button variant="outline" onClick={() => setShowInvoice(false)}>
                 Close
               </Button>
+              <Button variant="outline" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
               <Button onClick={handlePrint}>
-                <Receipt className="h-4 w-4 mr-2" />
+                <Printer className="h-4 w-4 mr-2" />
                 Print Invoice
               </Button>
             </DialogFooter>
