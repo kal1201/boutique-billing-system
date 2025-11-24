@@ -341,56 +341,27 @@ export default function CustomersPage() {
               window.onload = function() {
                 setTimeout(function() {
                   window.print();
-                }, 500);
+                  setTimeout(function() {
+                    window.close();
+                  }, 100);
+                }, 1000);
               };
             </script>
           </body>
         </html>
       `;
 
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = '0';
-      iframe.style.visibility = 'hidden';
-      
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentWindow?.document;
-      if (!iframeDoc) {
-        toast.error('Unable to create print document');
-        document.body.removeChild(iframe);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error('Please allow popups for printing');
         return;
       }
 
-      iframeDoc.open();
-      iframeDoc.write(htmlContent);
-      iframeDoc.close();
+      printWindow.document.open();
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
 
-      toast.info('Preparing to print...');
-
-      setTimeout(() => {
-        try {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-          toast.success('Print dialog opened!');
-          
-          setTimeout(() => {
-            if (document.body.contains(iframe)) {
-              document.body.removeChild(iframe);
-            }
-          }, 1000);
-        } catch (err) {
-          console.error('Print error:', err);
-          toast.error('Failed to open print dialog');
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-        }
-      }, 1000);
+      toast.success('Print dialog will open shortly');
 
     } catch (error: any) {
       console.error('Print setup error:', error);
@@ -413,61 +384,28 @@ export default function CustomersPage() {
       const jsPDFModule = await import('jspdf');
       const jsPDF = jsPDFModule.jsPDF;
 
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:fixed;left:-99999px;top:0;width:800px;height:1200px;border:0;background:#ffffff;';
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) {
-        throw new Error('Unable to create iframe document');
+      if (!invoiceRef.current) {
+        throw new Error('Invoice element not found');
       }
 
-      iframeDoc.open();
-      iframeDoc.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            * { 
-              margin: 0; 
-              padding: 0; 
-              box-sizing: border-box;
-              background-color: transparent;
-              color: #000000;
-            }
-            body { 
-              font-family: Arial, sans-serif; 
-              background-color: #ffffff !important;
-              color: #000000 !important;
-              padding: 40px;
-              width: 800px;
-            }
-          </style>
-        </head>
-        <body style="background-color: #ffffff !important;">
-          ${invoiceRef.current?.innerHTML || ''}
-        </body>
-        </html>
-      `);
-      iframeDoc.close();
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const canvas = await html2canvas(iframeDoc.body, {
+      const canvas = await html2canvas(invoiceRef.current, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         windowWidth: 800,
-        windowHeight: iframeDoc.body.scrollHeight,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.querySelector('.invoice-container');
+          if (clonedElement) {
+            (clonedElement as HTMLElement).style.backgroundColor = '#ffffff';
+            (clonedElement as HTMLElement).style.color = '#000000';
+          }
+        }
       });
 
-      document.body.removeChild(iframe);
-
       if (canvas.width === 0 || canvas.height === 0) {
-        throw new Error('Canvas has invalid dimensions');
+        throw new Error('Failed to capture invoice content');
       }
 
       const imgWidth = 210;
