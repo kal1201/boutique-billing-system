@@ -28,6 +28,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
 import { Plus, Search, Edit, Trash2, AlertCircle, Package } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface IProduct {
   id: number;
@@ -49,6 +51,7 @@ interface IProduct {
 }
 
 export default function InventoryPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,8 +76,11 @@ export default function InventoryPage() {
   });
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    // Wait for auth to load before fetching products
+    if (!authLoading && user) {
+      fetchProducts();
+    }
+  }, [authLoading, user]);
 
   useEffect(() => {
     filterProducts();
@@ -83,11 +89,13 @@ export default function InventoryPage() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
+      setError('');
       const data = await api.get<{ products: IProduct[] }>('/products');
       setProducts(data?.products || []);
     } catch (err: any) {
       setError(err.message);
       setProducts([]);
+      toast.error('Failed to load products: ' + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -134,8 +142,10 @@ export default function InventoryPage() {
 
       if (editingProduct) {
         await api.put(`/products/${editingProduct.id}`, payload);
+        toast.success('Product updated successfully!');
       } else {
         await api.post('/products', payload);
+        toast.success('Product added successfully!');
       }
 
       setIsAddDialogOpen(false);
@@ -144,17 +154,21 @@ export default function InventoryPage() {
       fetchProducts();
     } catch (err: any) {
       setError(err.message);
+      toast.error('Failed to save product: ' + err.message);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    // Use Dialog component instead of confirm
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
       await api.delete(`/products/${id}`);
+      toast.success('Product deleted successfully!');
       fetchProducts();
     } catch (err: any) {
       setError(err.message);
+      toast.error('Failed to delete product: ' + err.message);
     }
   };
 
