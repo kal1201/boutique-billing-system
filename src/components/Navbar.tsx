@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Store, LogOut, User, LayoutDashboard, Package, Users, FileText, ShoppingCart, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,10 +33,14 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                <Store className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">DressBill</span>
+              <Image 
+                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/kalasiddhi-logo-1763964669194.png?width=8000&height=8000&resize=contain"
+                alt="Kala Siddhi Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
+              <span className="text-xl font-bold">Kala Siddhi</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-1">

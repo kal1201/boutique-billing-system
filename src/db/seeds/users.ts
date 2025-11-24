@@ -1,32 +1,29 @@
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import { db } from '../index';
+import { users } from '../schema';
 import bcrypt from 'bcryptjs';
 
-async function main() {
-    const sampleUsers = [
-        {
-            name: 'Admin User',
-            email: 'admin@dressbill.com',
-            password: bcrypt.hashSync('admin123', 10),
-            phone: '9876543210',
-            role: 'admin',
-            createdAt: new Date('2024-01-01').toISOString(),
-        },
-        {
-            name: 'Staff Member',
-            email: 'staff@dressbill.com',
-            password: bcrypt.hashSync('staff123', 10),
-            phone: '9876543211',
-            role: 'staff',
-            createdAt: new Date('2024-01-01').toISOString(),
-        }
-    ];
+export async function seedUsers() {
+  console.log('🌱 Seeding users...');
 
-    await db.insert(users).values(sampleUsers);
-    
-    console.log('✅ Users seeder completed successfully');
+  const hashedAdminPassword = await bcrypt.hash('admin123', 10);
+  const hashedStaffPassword = await bcrypt.hash('staff123', 10);
+
+  await db.insert(users).values([
+    {
+      name: 'Admin User',
+      email: 'admin@kalasiddhi.com',
+      password: hashedAdminPassword,
+      role: 'admin',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      name: 'Staff User',
+      email: 'staff@kalasiddhi.com',
+      password: hashedStaffPassword,
+      role: 'staff',
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+
+  console.log('✅ Users seeded successfully');
 }
-
-main().catch((error) => {
-    console.error('❌ Seeder failed:', error);
-});

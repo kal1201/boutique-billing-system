@@ -326,6 +326,12 @@ export default function BillingPage() {
                 padding-bottom: 20px;
                 border-bottom: 3px solid #9333ea;
               }
+              .header img {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 10px;
+                display: block;
+              }
               .header h1 {
                 color: #9333ea;
                 font-size: 42px;
@@ -964,7 +970,12 @@ export default function BillingPage() {
             
             <div ref={invoiceRef} className="invoice">
               <div className="header">
-                <h1>DressBill</h1>
+                <img 
+                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/kalasiddhi-logo-1763964669194.png?width=8000&height=8000&resize=contain"
+                  alt="Kala Siddhi Logo"
+                  style={{ width: '80px', height: '80px', margin: '0 auto 10px', display: 'block' }}
+                />
+                <h1>Kala Siddhi</h1>
                 <p className="tagline">Boutique Billing System</p>
                 <p className="address">Women's Fashion Store</p>
               </div>
@@ -1046,7 +1057,7 @@ export default function BillingPage() {
               <div className="footer">
                 <p className="thank-you">Thank You for Shopping with Us!</p>
                 <p className="visit-again">We look forward to serving you again</p>
-                <p className="contact">For inquiries: contact@dressbill.com | +91 12345 67890</p>
+                <p className="contact">For inquiries: contact@kalasiddhi.com | +91 12345 67890</p>
               </div>
             </div>
 

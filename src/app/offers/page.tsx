@@ -363,7 +363,7 @@ export default function OffersPage() {
                 Offers & Promotions
               </h1>
               <p className="text-muted-foreground mt-1">
-                Create and manage promotional offers
+                Create and manage special offers for Kala Siddhi customers
               </p>
             </div>
             <Button onClick={() => {

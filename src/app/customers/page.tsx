@@ -224,6 +224,12 @@ export default function CustomersPage() {
             border-bottom: 2px solid #9333ea;
             padding-bottom: 15px;
           }
+          .invoice-header img {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            display: block;
+          }
           .invoice-header h1 {
             color: #9333ea;
             font-size: 32px;
@@ -464,7 +470,12 @@ export default function CustomersPage() {
         <body style="background-color: #ffffff !important;">
           <div style="width: 720px; background-color: #ffffff !important; color: #000000; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #9333ea; padding-bottom: 15px; background-color: transparent;">
-              <h1 style="color: #9333ea; font-size: 32px; margin: 0 0 5px 0; font-weight: bold; background-color: transparent;">DressBill</h1>
+              <img 
+                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/kalasiddhi-logo-1763964669194.png?width=8000&height=8000&resize=contain"
+                alt="Kala Siddhi Logo"
+                style="width: 80px; height: 80px; margin: 0 auto 10px; display: block; background-color: transparent;"
+              />
+              <h1 style="color: #9333ea; font-size: 32px; margin: 0 0 5px 0; font-weight: bold; background-color: transparent;">Kala Siddhi</h1>
               <p style="color: #666666; font-size: 14px; margin: 2px 0; background-color: transparent;">Boutique Billing System</p>
               <p style="color: #666666; font-size: 14px; margin: 2px 0; background-color: transparent;">Women's Fashion Store</p>
             </div>
@@ -929,8 +940,13 @@ export default function CustomersPage() {
                   paddingBottom: '15px'
                 }}
               >
+                <img 
+                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/kalasiddhi-logo-1763964669194.png?width=8000&height=8000&resize=contain"
+                  alt="Kala Siddhi Logo"
+                  style={{ width: '80px', height: '80px', margin: '0 auto 10px', display: 'block' }}
+                />
                 <h1 style={{ color: '#9333ea', fontSize: '32px', marginBottom: '5px', fontWeight: 'bold' }}>
-                  DressBill
+                  Kala Siddhi
                 </h1>
                 <p style={{ color: '#666666', fontSize: '14px', margin: '2px 0' }}>Boutique Billing System</p>
                 <p style={{ color: '#666666', fontSize: '14px', margin: '2px 0' }}>Women's Fashion Store</p>
